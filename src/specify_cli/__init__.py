@@ -667,7 +667,7 @@ def merge_json_files(existing_path: Path, new_content: dict, verbose: bool = Fal
     return merged
 
 def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Tuple[Path, dict]:
-    repo_owner = "github"
+    repo_owner = "DanielAndersson92"
     repo_name = "spec-kit"
     if client is None:
         client = httpx.Client(verify=ssl_context)
@@ -1464,8 +1464,9 @@ def init(
                 if skills_ok and not here:
                     agent_cfg = AGENT_CONFIG.get(selected_ai, {})
                     agent_folder = agent_cfg.get("folder", "")
+                    commands_subdir = agent_cfg.get("commands_subdir", "commands")
                     if agent_folder:
-                        cmds_dir = project_path / agent_folder.rstrip("/") / "commands"
+                        cmds_dir = project_path / agent_folder.rstrip("/") / commands_subdir
                         if cmds_dir.exists():
                             try:
                                 shutil.rmtree(cmds_dir)
@@ -2350,4 +2351,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
