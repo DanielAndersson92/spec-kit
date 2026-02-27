@@ -8,14 +8,24 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are MANDATORY. Every feature must include unit, integration,
+contract, and end-to-end tests with requirement-ID traceability.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+**Traceability**: Every `FR-xxx`, `API-xxx`, and `SEC-xxx` requirement in
+`spec.md` MUST have at least one mapped test task, and every test task MUST
+reference valid requirement IDs. Implementation tasks MUST ensure each test
+definition includes an explicit requirement reference tag/annotation. Security-
+critical contract/e2e tasks MUST run through production authn/authz middleware
+and real adapter boundaries. Required test suites MUST fail (not silently skip)
+when prerequisites are missing unless an approved exception exists.
+
+## Format: `[ID] [P?] [Lane] [Story?] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Lane]**: Exactly one lane tag per task: `[DB]`, `[INFRA]`, `[BE]`, or `[FE]`
+- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3); omit for setup/foundational/polish tasks
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -48,9 +58,10 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 [INFRA] Create project structure per implementation plan
+- [ ] T002 [INFRA] Initialize [language] project with [framework] dependencies
+- [ ] T003 [P] [INFRA] Configure linting and formatting tools
+- [ ] T004 [INFRA] Create/extend Makefile with deterministic CI/local targets (build, run, test-unit, test-integration, test-contract, test-e2e, lint, fmt, api-generate, migrate, up, down)
 
 ---
 
@@ -62,12 +73,22 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T005 [BE] Define/update OpenAPI contract in contracts/openapi.yaml before implementation
+- [ ] T006 [P] [BE] Configure DTO/client generation from OpenAPI spec
+- [ ] T007 [P] [BE] Setup API routing and middleware structure compliant with Zalando guidelines
+- [ ] T008 [BE] Implement trusted identity extraction from verified tokens/assertions and reject caller-controlled identity headers as authority
+- [ ] T009 [DB] Setup database schema and migrations framework through adapters
+- [ ] T010 [BE] Implement deny-by-default authorization model `(actor, action, resource, tenant)`
+- [ ] T011 [BE] Implement external callback/webhook authenticity checks (signature, freshness, replay protection) before state mutation
+- [ ] T012 [BE] Configure error handling, validation, structured logging, correlation IDs, and tracing baseline
+- [ ] T013 [BE] Implement auditable before/after state capture and explicit audit-write failure policy
+- [ ] T014 [INFRA] Setup environment configuration and secrets handling (no secrets in VCS)
+- [ ] T015 [INFRA] Create requirement-to-test traceability matrix for FR/API/SEC IDs
+- [ ] TXXX [INFRA] Add CI check that every canonical OpenAPI operation is wired to a runtime route
+- [ ] TXXX [INFRA] Add static/CI guard forbidding stub/placeholder production adapters outside test-only packages
+- [ ] TXXX [DB] Add integration tests that prove transaction rollback/atomicity and tx-bound statement usage
+- [ ] TXXX [INFRA] Add fail-closed test-runner behavior for missing integration/contract/e2e prerequisites
+- [ ] TXXX [INFRA] Add CI dependency provisioning + health checks before integration/contract/e2e suites
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -79,21 +100,23 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (MANDATORY) ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T016 [P] [BE] [US1] Unit tests for domain/application logic with positive, negative, boundary cases in tests/unit/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
+- [ ] T017 [P] [BE] [US1] Contract test validating OpenAPI schema + behavior/status/header/auth semantics through production middleware in tests/contract/test_[name].py (refs: API-xxx/SEC-xxx)
+- [ ] T018 [P] [DB] [US1] Integration test for adapter behavior with real infrastructure in tests/integration/test_[name].py (refs: FR-xxx/SEC-xxx)
+- [ ] T019 [P] [BE] [US1] End-to-end test over deployed boundary (real transport + adapters) for happy path and negative/authorization path in tests/e2e/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T020 [P] [BE] [US1] Create/extend domain model(s) in src/domain/[entity].py
+- [ ] T021 [P] [BE] [US1] Implement use case(s) in src/application/[use_case].py
+- [ ] T022 [P] [BE] [US1] Define/update port interfaces in src/ports/[port].py
+- [ ] T023 [BE] [US1] Implement adapter(s) in src/adapters/[adapter].py
+- [ ] T024 [BE] [US1] Implement transport/API endpoint in src/transport/[file].py
+- [ ] T025 [BE] [US1] Regenerate DTO/client artifacts and verify no manual drift
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -105,17 +128,19 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (MANDATORY) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T026 [P] [BE] [US2] Unit tests for domain/application logic in tests/unit/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
+- [ ] T027 [P] [BE] [US2] Contract test validating OpenAPI schema + behavior/status/header/auth semantics through production middleware in tests/contract/test_[name].py (refs: API-xxx/SEC-xxx)
+- [ ] T028 [P] [DB] [US2] Integration test with real adapters in tests/integration/test_[name].py (refs: FR-xxx/SEC-xxx)
+- [ ] T029 [P] [BE] [US2] End-to-end test over deployed boundary (real transport + adapters) for happy + negative/authorization path in tests/e2e/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T030 [P] [BE] [US2] Extend domain model(s) in src/domain/[entity].py
+- [ ] T031 [BE] [US2] Implement use case(s) in src/application/[use_case].py
+- [ ] T032 [BE] [US2] Implement/update adapters in src/adapters/[adapter].py
+- [ ] T033 [BE] [US2] Implement/update API behavior in src/transport/[file].py
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -127,16 +152,19 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (MANDATORY) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T034 [P] [BE] [US3] Unit tests for domain/application logic in tests/unit/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
+- [ ] T035 [P] [BE] [US3] Contract test validating OpenAPI schema + behavior/status/header/auth semantics through production middleware in tests/contract/test_[name].py (refs: API-xxx/SEC-xxx)
+- [ ] T036 [P] [DB] [US3] Integration test with real adapters in tests/integration/test_[name].py (refs: FR-xxx/SEC-xxx)
+- [ ] T037 [P] [BE] [US3] End-to-end test over deployed boundary (real transport + adapters) for happy + negative/authorization path in tests/e2e/test_[name].py (refs: FR-xxx/API-xxx/SEC-xxx)
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T038 [P] [BE] [US3] Extend domain model(s) in src/domain/[entity].py
+- [ ] T039 [BE] [US3] Implement use case(s) in src/application/[use_case].py
+- [ ] T040 [BE] [US3] Implement/update adapters in src/adapters/[adapter].py
+- [ ] T041 [BE] [US3] Implement/update API behavior in src/transport/[file].py
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -150,12 +178,19 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
-- [ ] TXXX Code cleanup and refactoring
-- [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
-- [ ] TXXX Security hardening
-- [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [P] [INFRA] Documentation updates in docs/ using .specify/templates/docs-template.md
+- [ ] TXXX [BE] Code cleanup and refactoring
+- [ ] TXXX [BE] Performance optimization across all stories
+- [ ] TXXX [P] [BE] Verify domain branch coverage is >=80% in CI
+- [ ] TXXX [P] [INFRA] Verify requirement-test traceability matrix completeness
+- [ ] TXXX [P] [BE] Verify webhook/event authenticity tests cover signature, freshness, and replay protection
+- [ ] TXXX [P] [BE] Verify audit trail includes actor/target/timestamp and before/after with explicit failure policy
+- [ ] TXXX [P] [BE] Verify observability baseline (structured logs, correlation IDs, metrics, traces) for changed flows
+- [ ] TXXX [P] [INFRA] README.md update using .specify/templates/readme-template.md for setup/runtime/config/API changes in same changeset
+- [ ] TXXX [P] [INFRA] ARCHITECTURE.md update using .specify/templates/architecture-template.md
+- [ ] TXXX [BE] Security hardening and deny-by-default authorization regression checks
+- [ ] TXXX [P] [INFRA] Verify latest-stable dependency checks fail closed when registries are reachable (or document approved exception)
+- [ ] TXXX [INFRA] Run quickstart.md validation
 
 ---
 
@@ -178,7 +213,9 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
+- Tests MUST be written and FAIL before implementation
+- Unit + contract + integration + e2e tests are mandatory for each story
+- Domain before application
 - Models before services
 - Services before endpoints
 - Core implementation before integration
@@ -198,13 +235,15 @@ Examples of foundational tasks (adjust based on your project):
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all tests for User Story 1 together (if tests requested):
-Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
-Task: "Integration test for [user journey] in tests/integration/test_[name].py"
+# Launch all mandatory tests for User Story 1 together:
+Task: "Unit tests for [use case] in tests/unit/test_[name].py (refs: FR/API/SEC IDs)"
+Task: "Contract test for [endpoint] in tests/contract/test_[name].py (refs: API IDs)"
+Task: "Integration test for [adapter flow] in tests/integration/test_[name].py (refs: FR/SEC IDs)"
+Task: "E2E test for [user journey] in tests/e2e/test_[name].py (refs: FR/API/SEC IDs)"
 
-# Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in src/models/[entity1].py"
-Task: "Create [Entity2] model in src/models/[entity2].py"
+# Launch domain modeling tasks for User Story 1 together:
+Task: "Create [Entity1] in src/domain/[entity1].py"
+Task: "Create [Entity2] in src/domain/[entity2].py"
 ```
 
 ---
@@ -243,9 +282,10 @@ With multiple developers:
 ## Notes
 
 - [P] tasks = different files, no dependencies
+- [Lane] tag maps task to responsible implementation lane
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
-- Verify tests fail before implementing
+- Verify tests fail before implementing and include requirement IDs
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

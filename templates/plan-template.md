@@ -64,9 +64,10 @@ src/
 └── lib/
 
 tests/
+├── unit/
 ├── contract/
 ├── integration/
-└── unit/
+└── e2e/
 
 # [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
 backend/

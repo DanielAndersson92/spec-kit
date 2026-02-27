@@ -89,8 +89,10 @@ Given that feature description, do this:
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
-    5. Generate Functional Requirements
-       Each requirement must be testable
+    5. Generate Requirements (`FR-xxx`, `API-xxx`, `SEC-xxx`)
+       Each requirement must be testable and unambiguous
+       Ensure API and security requirements are explicit, not implied
+       Add traceability expectations so tests can reference requirement IDs
        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
     6. Define Success Criteria
        Create measurable, technology-agnostic outcomes
@@ -122,7 +124,10 @@ Given that feature description, do this:
       ## Requirement Completeness
       
       - [ ] No [NEEDS CLARIFICATION] markers remain
+      - [ ] Requirements use `FR-xxx`, `API-xxx`, and `SEC-xxx` identifiers
       - [ ] Requirements are testable and unambiguous
+      - [ ] API requirements define contract behavior and compatibility expectations
+      - [ ] Security requirements cover validation, authorization, and risk controls
       - [ ] Success criteria are measurable
       - [ ] Success criteria are technology-agnostic (no implementation details)
       - [ ] All acceptance scenarios are defined
@@ -132,7 +137,8 @@ Given that feature description, do this:
       
       ## Feature Readiness
       
-      - [ ] All functional requirements have clear acceptance criteria
+      - [ ] All FR/API/SEC requirements have clear acceptance criteria
+      - [ ] Requirement-to-test traceability expectations are documented, including explicit per-test reference tagging
       - [ ] User scenarios cover primary flows
       - [ ] Feature meets measurable outcomes defined in Success Criteria
       - [ ] No implementation details leak into specification
@@ -202,7 +208,7 @@ Given that feature description, do this:
 ## Quick Guidelines
 
 - Focus on **WHAT** users need and **WHY**.
-- Avoid HOW to implement (no tech stack, APIs, code structure).
+- Avoid HOW to implement (no tech stack, frameworks, internal code structure).
 - Written for business stakeholders, not developers.
 - DO NOT create any checklists that are embedded in the spec. That will be a separate command.
 
